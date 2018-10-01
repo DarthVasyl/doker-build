@@ -1,0 +1,90 @@
+---
+# <-- Moodle full deployment -->
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: moodle-1.4
+  labels:
+    app: moodle-352
+spec:
+  template:
+    metadata:
+      labels:
+        app: moodle-352
+    spec:
+    # <-- CONTAINERS -->
+      containers:
+        # <-- START Proxy container -->
+        - name: cloudsql-proxy
+          image: gcr.io/cloudsql-docker/gce-proxy:1.11
+          # path db endpoint to container
+          command: ["/cloud_sql_proxy",
+                    "-instances=devops-docker-demo:us-central1:moodle-db=tcp:3306",
+                    "-credential_file=/secrets/cloudsql/credentials.json"]
+          # <-- cloudsql_security_context -->
+          securityContext:
+            runAsUser: 2  # non-root user
+            allowPrivilegeEscalation: false
+          volumeMounts:
+            - name: cloudsql-instance-credentials
+              mountPath: /secrets/cloudsql
+              readOnly: true
+        # <-- END Proxy container -->
+
+        # <-- START Moodle container -->
+        - name: moodle-352
+          image: gcr.io/devops-docker-demo/docker-build:build_v_1.4
+          imagePullPolicy: IfNotPresent
+          ports:
+          - containerPort: 80
+          # env variables fro Moodle cli installation
+          env:
+          - name: MOODLE_URL
+            value: http://23.251.145.5/moodle/
+          - name: MOODLE_DATA
+            value: /var/moodledata
+          - name: DB_HOST
+            value: "127.0.0.1"
+          - name: DB_PORT
+            value: "3306"
+          - name: DB_NAME
+            value: moodle
+          - name: ADMIN_PASS
+            value: m00dLe
+          - name: INIT_DB
+            value: "0"
+          # Get DB secrets from configuration files, generated earlier
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: cloudsql-db-credentials
+                key: username
+          - name: DB_PASS
+            valueFrom:
+              secretKeyRef:
+                name: cloudsql-db-credentials
+                key: password
+        # <-- END Moodle container -->
+      # <-- START volumes -->
+      volumes:
+        - name: cloudsql-instance-credentials
+          secret:
+            secretName: cloudsql-instance-credentials
+      # <-- END volumes -->
+
+# <-- START loadbalancer -->
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: moodle-loadb
+  labels:
+    app: moodle-352
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: moodle-352
+# <-- END loadbalancer -->

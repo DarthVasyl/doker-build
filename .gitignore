@@ -1,0 +1,87 @@
+# Editor swapfiles
+.*.sw?
+*~
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Docker
+docker/docker
+
+# User cluster configs
+.kubeconfig
+.tags*
+
+# Vagrant stuff
+acceptance_config.yml
+boxes/*
+/.vagrant
+/website/.vagrant
+/website/build
+/vagrant-spec.config.rb
+test/vagrant-spec/.vagrant/
+
+# Bundler/Rubygems
+*.gem
+.bundle
+pkg/*
+tags
+/Gemfile.lock
+test/tmp/
+vendor/
+/exec
+.ruby-bundle
+
+# Documentation
+_site/*
+.yardoc/
+doc/
+
+# Python
+*.pyc
+
+# Rubinius
+*.rbc
+
+*.retry
+
+# IDE junk
+.idea/*
+*.iml
+.project
+
+# Ruby Managers
+.rbenv
+.rbenv-gemsets
+.ruby-gemset
+.ruby-version
+.rvmrc
+
+# Box storage for spec
+test/vagrant-spec/boxes/*.box
+
+# Terraform
+
+
+
+DEMO_2_AWS/020-instances/vd-ssh\.pem
+
+DEMO_2_AWS/\.gitignore\.save
+
+\.gitignore\.save
+
+DEMO_2_AWS/020-instances/ssh-command
+
+DEMO_2_AWS/copy_ansible
+
+DEMO_2_AWS/030-provision/ansible\.tar\.gz
+
+DEMO_2_AWS/run_terraform\.sh
+
+DEMO_2_AWS/terraform\.tfstate
+
+devops-docker-demo-e2e3d79083d7\.json
+
+\.keys/

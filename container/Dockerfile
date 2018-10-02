@@ -44,9 +44,9 @@ RUN tar xzf /var/www/html/moodle-latest-35.tgz -C /var/www/html; echo "---> Unar
 RUN yum -y update && yum -y install nfs-utils
 
 # Mount fileshare
-RUN mkdir -m 755 /var/moodledata && \
-mount 10.72.88.234:/moodledata /var/moodledata && \
-chmod go+rw /var/moodledata
+#RUN mkdir -m 755 /var/moodledata && \
+#mount 10.72.88.234:/moodledata /var/moodledata && \
+#chmod go+rw /var/moodledata
 
 # Add start script
 ADD install_moodle.sh /

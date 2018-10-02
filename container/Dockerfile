@@ -21,12 +21,6 @@ RUN rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
 RUN yum install -y php70w php70w-curl php70w-gd php70w-intl php70w-ldap php70w-mysqlnd php70w-pspell \
 php70w-xml php70w-xmlrpc php70w-zip php70w-common php70w-opcache php70w-mbstring php70w-soap
 
-# Install python libs
-#RUN yum install -y libselinux-python libsemanage-python
-
-# Install mysql client
-# RUN yum -y install mariadb-server mariadb
-
 # Install apache2
 RUN yum install -y httpd
 

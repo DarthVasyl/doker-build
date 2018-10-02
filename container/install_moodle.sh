@@ -21,5 +21,8 @@
 chown -R apache:apache /var/moodledata
 chown -R apache:apache /var/www/html
 
+# set up crone
+echo "* * * * *    /usr/bin/php /var/www/html/moodle/admin/cli/cron.php >/dev/null" >> /var/spool/cron/root
+
 # Run apache server
 /usr/sbin/httpd -D FOREGROUND

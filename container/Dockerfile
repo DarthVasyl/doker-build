@@ -11,7 +11,7 @@ ENV DB_PASS=m00dLe
 ENV ADMIN_PASS=m00dLe
 ENV MOODLE_DATA=10.72.88.234:/moodledata
 ENV INIT_DB=0
-ENV MOODLE_URL=http://localhost/moodle
+ENV MOODLE_URL=http://35.239.101.65/moodle
 
 # Add epel repo
 RUN yum install -y epel-release; yum clean all; yum -y update --nogpgcheck

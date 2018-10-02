@@ -14,7 +14,7 @@ spec:
     spec:
     # <-- CONTAINERS -->
       containers:
-        # <-- START Proxy container -->
+ # <-- START Proxy container -->
         - name: cloudsql-proxy
           image: gcr.io/cloudsql-docker/gce-proxy:1.12
           # path db endpoint to container
@@ -30,23 +30,16 @@ spec:
               mountPath: /secrets/cloudsql
               readOnly: true
         # <-- END Proxy container -->
-      # <-- START volumes -->
-      volumes:
-        - name: cloudsql-instance-credentials
-          secret:
-            secretName: cloudsql-instance-credentials
-      # <-- END volumes -->
-      
         # <-- START Moodle container -->
         - name: moodle-352
-          image: gcr.io/gcloud-docker-demo/docker-build:v.1.2
+          image: gcr.io/gcloud-docker-demo/docker-build:v.1.4
           imagePullPolicy: IfNotPresent
           ports:
           - containerPort: 80
           # env variables fro Moodle cli installation
           env:
           - name: MOODLE_URL
-            value: http://35.241.50.109/moodle/
+            value: http://35.239.101.65/moodle/
           - name: MOODLE_DATA
             value: /var/moodledata
           - name: DB_HOST
@@ -71,6 +64,12 @@ spec:
                 name: cloudsql-db-credentials
                 key: password
         # <-- END Moodle container -->
+      # <-- START volumes -->
+      volumes:
+        - name: cloudsql-instance-credentials
+          secret:
+            secretName: cloudsql-instance-credentials
+      # <-- END volumes -->
 
 
 # <-- START loadbalancer -->

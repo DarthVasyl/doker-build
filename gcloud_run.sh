@@ -9,6 +9,7 @@ DB_NAME=moodle
 DB_USER=moodleuser
 DB_USER_PASS=m00dLe
 FILESHARE_NAME=moodledata
+FILESHARE_MOUNT=10.72.88.234:/moodledata
 DB_ENDPOINT=gcloud-docker-demo:us-central1:moodle-db
 
 # <--- START SQL --- >
@@ -34,16 +35,14 @@ fi
 DB_ENDPOINT=sudo gcloud beta sql instances describe $DB_INTANCE_NAME --project=devops-docker-demo | grep connectionName | sed 's\connectionName: \\g'
 
 # <--- START FILESHARE --- >
-# sudo gcloud beta filestore instances create $FILESHARE_NAME \
-#     --project=devops-docker-demo --location=us-central1-c \
-#     --file-share=name=$FILESHARE_NAME,capacity=1TB \
-#     --network=name="default"
+ sudo gcloud beta filestore instances create $FILESHARE_NAME \
+     --project=$PROJECT_ID --location=us-central1-c \
+     --file-share=name=$FILESHARE_NAME,capacity=1TB \
+     --network=name="default"
 ### get info
 # sudo gcloud beta filestore instances describe $FILESHARE_NAME --project=devops-docker-demo --location=us-central1-c | grep endpoint
 
 ### create VM just for Moodle installation
-
-### Create machine for moodle installation
 sudo gcloud beta compute --project=$PROJECT_ID instances create $VM_INSTANCE_NAME --zone=us-central1-b \
 --machine-type=n1-standard-1 --subnet=default --service-account=$SERVICE_ACCOUNT \
 --tags=http-server --image=cos-dev-71-11104-0-0 --image-project=cos-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard \
@@ -61,23 +60,22 @@ sudo gcloud beta compute --project=gcloud-docker-demo instances create moodle-ju
 sudo gcloud compute --project=devops-docker-demo firewall-rules create default-allow-http --direction=INGRESS \
 --priority=1000 --network=default --action=ALLOW --rules=tcp:80 --source-ranges=0.0.0.0/0 --target-tags=http-server
 
-sleep 2m
 ### script to run on pods
-# sudo apt-get -y update
-# sudo apt-get -y install nfs-common
-# sudo mkdir /var/moodledata
-# sudo mount 10.143.94.26:/moodledata /var/moodledata
-# sudo chmod go+rw /var/moodledata
-# <--- END SQL --- >
+ sudo apt-get -y update
+ sudo apt-get -y install nfs-common
+ sudo mkdir /var/moodledata
+ sudo mount 10.143.94.26:/moodledata /var/moodledata
+ sudo chmod go+rw /var/moodledata
+
 
 # <--- START kubernetes cluster --- >
 sudo gcloud container clusters create mdc-1 --addons=HttpLoadBalancing --disk-size=60 --enable-autorepair \
 --enable-autoupgrade --enable-autoscaling --max-nodes=10 --min-nodes=2 --region=us-central1 \
---service-account=docker-admin@devops-docker-demo.iam.gserviceaccount.com
+--service-account=$SERVICE_ACCOUNT
 
 sleep 5m
 ### get kubernetes credentials
-sudo gcloud beta container clusters get-credentials mdc-1 --region us-central1 --project devops-docker-demo
+sudo gcloud beta container clusters get-credentials mdc-1 --region us-central1 --project $PROJECT_ID
 
 ### Create load balancer
 #sudo kubectl expose moodle-1.4 --port=80 --target-port=8080 \
@@ -87,7 +85,7 @@ sudo gcloud beta container clusters get-credentials mdc-1 --region us-central1 -
 
 # <--- START SQL proxy credentials --- >
 sudo kubectl create secret generic cloudsql-instance-credentials \
-    --from-file=credentials.json=devops-docker-demo-e2e3d79083d7.json
+    --from-file=credentials.json=.keys/gcloud-docker-demo-1ae353ab8f29.json
 
 sudo kubectl create secret generic cloudsql-db-credentials \
     --from-literal=username=moodleuser --from-literal=password=m00dLe

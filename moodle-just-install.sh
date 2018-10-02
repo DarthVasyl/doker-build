@@ -22,8 +22,7 @@ sudo yum -y install wget && \
 wget https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64 -O cloud_sql_proxy && \
 chmod +x cloud_sql_proxy
 
-./cloud_sql_proxy -instances=devops-docker-demo:us-central1:mdb=tcp:3306 \
--credential_file=/home/formicking/key-file.json &
+./cloud_sql_proxy -instances=gcloud-docker-demo:us-central1:moodle-db=tcp:3306 -credential_file=key-file.json &
 
 ## GET proxy container
 sudo yum -y install mysql
@@ -33,10 +32,11 @@ MODLE_IP=sudo gcloud beta compute instances describe moodle-just-install --proje
 MOODLE_PATH="http://$MOODLE_IP/moodle"
 # get docker image
 sudo gcloud docker --authorize-only && \
+sudp docker pull -- pull gcr.io/gcloud-docker-demo/docker-build:v.1.0
 sudo gcloud docker -- pull gcr.io/devops-docker-demo/docker-build:build_v_1.8 && \
 sudo docker run gcr.io/devops-docker-demo/docker-build:build_v_1.8 \
 -e INIT_DB=1 -e MOODLE_URL=http://35.227.222.254/moodle -ti moodle \
---mount type=bind,source=/var/moodledata,target=/var/moodledata
+--mount type=bind,source=/var/moodledata,target=/var/moodledata,bind-propagation=shared
 
 
 sudo docker run gcr.io/devops-docker-demo/docker-build:build_v_1.6 \

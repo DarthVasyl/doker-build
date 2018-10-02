@@ -3,7 +3,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: moodle-1.4
+  name: moodle-beta
   labels:
     app: moodle-352
 spec:
@@ -16,10 +16,10 @@ spec:
       containers:
         # <-- START Proxy container -->
         - name: cloudsql-proxy
-          image: gcr.io/cloudsql-docker/gce-proxy:1.11
+          image: gcr.io/cloudsql-docker/gce-proxy:1.12
           # path db endpoint to container
           command: ["/cloud_sql_proxy",
-                    "-instances=devops-docker-demo:us-central1:moodle-db=tcp:3306",
+                    "-instances=gcloud-docker-demo:us-central1:moodle-db=tcp:3306",
                     "-credential_file=/secrets/cloudsql/credentials.json"]
           # <-- cloudsql_security_context -->
           securityContext:
@@ -30,17 +30,23 @@ spec:
               mountPath: /secrets/cloudsql
               readOnly: true
         # <-- END Proxy container -->
-
+      # <-- START volumes -->
+      volumes:
+        - name: cloudsql-instance-credentials
+          secret:
+            secretName: cloudsql-instance-credentials
+      # <-- END volumes -->
+      
         # <-- START Moodle container -->
         - name: moodle-352
-          image: gcr.io/devops-docker-demo/docker-build:build_v_1.4
+          image: gcr.io/gcloud-docker-demo/docker-build:v.1.2
           imagePullPolicy: IfNotPresent
           ports:
           - containerPort: 80
           # env variables fro Moodle cli installation
           env:
           - name: MOODLE_URL
-            value: http://23.251.145.5/moodle/
+            value: http://35.241.50.109/moodle/
           - name: MOODLE_DATA
             value: /var/moodledata
           - name: DB_HOST
@@ -65,12 +71,7 @@ spec:
                 name: cloudsql-db-credentials
                 key: password
         # <-- END Moodle container -->
-      # <-- START volumes -->
-      volumes:
-        - name: cloudsql-instance-credentials
-          secret:
-            secretName: cloudsql-instance-credentials
-      # <-- END volumes -->
+
 
 # <-- START loadbalancer -->
 ---

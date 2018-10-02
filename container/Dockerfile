@@ -31,10 +31,10 @@ php70w-xml php70w-xmlrpc php70w-zip php70w-common php70w-opcache php70w-mbstring
 RUN yum install -y httpd
 
 # Download and untar latest Moodle
-RUN curl -SL https://download.moodle.org/download.php/direct/stable35/moodle-latest-35.tgz \
-    | tar -xzf /var/www/html \
-    && make -C /var/www/html all \
-    && echo "---> Moodle unarchive completed"
+ADD https://download.moodle.org/download.php/direct/stable35/moodle-latest-35.tgz /var/www/html
+RUN tar -xzf /var/www/html/moodle-latest-35.tgz -C /var/www/html && \
+    rm /var/www/html/moodle-latest-35.tgz && \
+    echo "---> Unarchive completed"
 
 # make directory for share files
 RUN mkdir -m 755 $MOODLE_DATA

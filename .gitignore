@@ -85,3 +85,5 @@ DEMO_2_AWS/terraform\.tfstate
 devops-docker-demo-e2e3d79083d7\.json
 
 \.keys/
+
+scripts/moodle-just-install\.sh

@@ -18,7 +18,7 @@
     $(if [ $INIT_DB -eq 0 ]; then echo "--skip-database"; fi)
 
 # Make apache owner of moodle files
-chown apache:apache $MOODLE_DATA
+chown -R apache:apache /var/moodledata
 chown -R apache:apache /var/www/html
 
 # Run apache server

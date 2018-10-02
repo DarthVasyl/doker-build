@@ -71,20 +71,22 @@ spec:
             secretName: cloudsql-instance-credentials
       # <-- END volumes -->
 
-
-# <-- START loadbalancer -->
 ---
+# <-- START loadbalancer -->
 apiVersion: v1
 kind: Service
 metadata:
-  name: moodle-loadb
   labels:
     app: moodle-352
+  name: moodle-loadb
+  namespace: default
 spec:
-  type: LoadBalancer
   ports:
-  - port: 80
-    targetPort: 8080
+  - nodePort: 32292
+    port: 80
+    protocol: TCP
+    targetPort: 80
   selector:
     app: moodle-352
+  type: LoadBalancer
 # <-- END loadbalancer -->

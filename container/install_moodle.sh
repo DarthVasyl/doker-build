@@ -18,17 +18,17 @@
     $(if [ $INIT_DB -eq 0 ]; then echo "--skip-database"; fi)
 
 # Enable dev mode
-echo "// ENABLE DEVELOPER MODE"  >> /var/www/html/moodle/config.php
-echo "    \$CFG->tool_generator_users_password = 'examplepassword';" >> /var/www/html/moodle/config.php
-echo "    \$CFG->debug = (E_ALL | E_STRICT);   // === DEBUG_DEVELOPER - NOT FOR PRODUCTION SERVERS!" >> /var/www/html/moodle/config.php
-echo "   \$CFG->debugdisplay = 1;" >> /var/www/html/moodle/config.php
+sed '/^\s*require_once/i\\// ENABLE DEVELOPER MODE' -i /var/www/html/moodle/config.php
+sed '/^\s*require_once/i\\$CFG->tool_generator_users_password = 'examplepassword';' -i /var/www/html/moodle/config.php
+sed '/^\s*require_once/i\\$CFG->debug = (E_ALL | E_STRICT);   // === DEBUG_DEVELOPER - NOT FOR PRODUCTION SERVERS!' -i /var/www/html/moodle/config.php
+sed '/^\s*require_once/i\\$CFG->debugdisplay = 1;' -i /var/www/html/moodle/config.php
+
 
 # add redis configuration
-echo "// REDIS CONFIGURATION" >> /var/www/html/moodle/config.php
-echo "    \$CFG->session_handler_class = '\core\session\redis';" >> /var/www/html/moodle/config.php
-echo "    \$CFG->session_redis_host = '10.0.5.3';" >> /var/www/html/moodle/config.php
-echo "    \$CFG->session_redis_acquire_lock_timeout = 120;" >> /var/www/html/moodle/config.php
-echo "    \$CFG->session_redis_lock_expire = 7200;" >> /var/www/html/moodle/config.php
+sed '/^\s*require_once/i\\$CFG->session_redis_host = '"'${REDIS_SERVER}';" -i /var/www/html/moodle/config.php
+sed '/^\s*require_once/i\\$CFG->session_handler_class = '"'"'\\core\\session\\redis'"'"'\;' -i /var/www/html/moodle/config.php
+sed '/^\s*require_once/i\\$CFG->session_redis_acquire_lock_timeout = 120;' -i /var/www/html/moodle/config.php
+sed '/^\s*require_once/i\\$CFG->session_redis_lock_expire = 7200;' -i /var/www/html/moodle/config.php
 
 # Make apache owner of moodle files
 chown -R apache:apache /var/moodledata

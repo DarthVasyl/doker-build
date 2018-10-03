@@ -12,6 +12,7 @@ ENV DB_USER=moodleuser
 ENV DB_PASS=m00dLe
 ENV ADMIN_PASS=m@Dm1n
 ENV INIT_DB=0
+ENV REDIS_SERVER=10.0.5.3
 
 # Add epel repo
 RUN yum install -y epel-release; yum clean all; yum -y update --nogpgcheck

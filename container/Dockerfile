@@ -19,7 +19,7 @@ RUN rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
 
 # Install php7.0 with modules
 RUN yum install -y php70w php70w-curl php70w-gd php70w-intl php70w-ldap php70w-mysqlnd php70w-pspell \
-php70w-xml php70w-xmlrpc php70w-zip php70w-common php70w-opcache php70w-mbstring php70w-soap
+php70w-xml php70w-xmlrpc php70w-zip php70w-common php70w-opcache php70w-mbstring php70w-soap php70w-pecl-redis
 
 # Install apache2
 RUN yum install -y httpd

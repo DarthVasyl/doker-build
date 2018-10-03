@@ -76,6 +76,9 @@ sudo kubectl create secret generic cloudsql-instance-credentials \
 
 sudo kubectl create secret generic cloudsql-db-credentials \
     --from-literal=username=$DB_USER --from-literal=password=$DB_USER_PASS
+
+sudo kubectl create secret generic cloudsql-db-credentials \
+    --from-literal=username=moodleuser --from-literal=password=m00dLe
 # <--- END SQL proxy credentials --- >
 
 # <--- END kubernetes cluster --- >

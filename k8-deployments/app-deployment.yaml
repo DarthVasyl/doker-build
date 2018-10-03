@@ -32,8 +32,11 @@ spec:
         # <-- END Proxy container -->
         # <-- START Moodle container -->
         - name: moodle-352
-          image: gcr.io/gcloud-docker-demo/docker-build:v.1.8
+          image: gcr.io/gcloud-docker-demo/docker-build:v.1.9
           imagePullPolicy: IfNotPresent
+          volumeMounts:
+          - mountPath: /var/moodledata
+            name: mypvc
           ports:
           - containerPort: 80
           # env variables fro Moodle cli installation
@@ -69,6 +72,10 @@ spec:
         - name: cloudsql-instance-credentials
           secret:
             secretName: cloudsql-instance-credentials
+        - name: mypvc
+          persistentVolumeClaim:
+            claimName: fileserver-claim
+            readOnly: false
       # <-- END volumes -->
 
 ---
@@ -90,3 +97,32 @@ spec:
     app: moodle-352
   type: LoadBalancer
 # <-- END loadbalancer -->
+
+# <-- Fileshare claim -->
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fileserver-claim
+spec:
+  accessModes:
+  - ReadWriteMany
+  storageClassName: ""
+  resources:
+    requests:
+      storage: 1T
+
+# <-- Fileshare volume -->
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: fileserver
+spec:
+  capacity:
+    storage: 1T
+  accessModes:
+  - ReadWriteMany
+  nfs:
+    path: /moodledata
+    server: 10.72.88.234

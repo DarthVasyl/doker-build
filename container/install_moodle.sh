@@ -23,7 +23,10 @@ sed -i '/^\s*require_once/i\\$CFG->session_handler_class = '"'"'\\core\\session\
 sed -i '/^\s*require_once/i\\$CFG->session_redis_acquire_lock_timeout = 120;' /var/www/html/moodle/config.php
 sed -i '/^\s*require_once/i\\$CFG->session_redis_lock_expire = 7200;' /var/www/html/moodle/config.php
 
-#Enable Redis in PHP
+# Change Apache configs
+sed -i 's#AllowOverride [nN]one#AllowOverride All#' /etc/httpd/conf/httpd.conf
+
+# Enable Redis in PHP
 echo "session.save_handler = redis" >> /etc/php.d/redis.ini
 echo "session.save_path = \"tcp://${REDIS_SERVER}:6379\"" >> /etc/php.d/redis.ini
 

@@ -19,16 +19,16 @@
 
 # Enable dev mode
 echo "// ENABLE DEVELOPER MODE \n"  >> /var/www/html/moodle/config.php
-echo "    $CFG->tool_generator_users_password = 'examplepassword'; \n \
-    $CFG->debug = (E_ALL | E_STRICT);   // === DEBUG_DEVELOPER - NOT FOR PRODUCTION SERVERS!
-    $CFG->debugdisplay = 1; \n" >> /var/www/html/moodle/config.php
+echo "    \$CFG->tool_generator_users_password = 'examplepassword'; \n \
+    \$CFG->debug = (E_ALL | E_STRICT);   // === DEBUG_DEVELOPER - NOT FOR PRODUCTION SERVERS!
+    \$CFG->debugdisplay = 1; \n" >> /var/www/html/moodle/config.php
 
 # add redis configuration
 echo "// REDIS CONFIGURATION \n" >> /var/www/html/moodle/config.php
-echo "    $CFG->session_handler_class = '\core\session\redis'; \n \
-    $CFG->session_redis_host = '127.0.0.1'; \n \
-    $CFG->session_redis_acquire_lock_timeout = 120; \n \
-    $CFG->session_redis_lock_expire = 7200; \n" >> /var/www/html/moodle/config.php
+echo "    \$CFG->session_handler_class = '\core\session\redis'; \n \
+    \$CFG->session_redis_host = '127.0.0.1'; \n \
+    \$CFG->session_redis_acquire_lock_timeout = 120; \n \
+    \$CFG->session_redis_lock_expire = 7200; \n" >> /var/www/html/moodle/config.php
 
 # Make apache owner of moodle files
 chown -R apache:apache /var/moodledata

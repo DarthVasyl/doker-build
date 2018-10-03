@@ -27,7 +27,7 @@
 
 # Change Apache configs
 sed -i 's#AllowOverride [nN]one#AllowOverride All#' /etc/httpd/conf/httpd.conf
-sed -i 's#DirectoryIndex index.html#DirectoryIndex index.php#' /etc/httpd/conf/httpd.conf
+#sed -i 's#DirectoryIndex index.html#DirectoryIndex index.php#' /etc/httpd/conf/httpd.conf
 
 # Enable Redis in PHP
 #echo "session.save_handler = redis" >> /etc/php.d/redis.ini

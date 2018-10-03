@@ -18,17 +18,21 @@
     $(if [ $INIT_DB -eq 0 ]; then echo "--skip-database"; fi)
 
 # Enable dev mode
-sed '/^\s*require_once/i\\// ENABLE DEVELOPER MODE' -i /var/www/html/moodle/config.php
-sed '/^\s*require_once/i\\$CFG->tool_generator_users_password = 'examplepassword';' -i /var/www/html/moodle/config.php
-sed '/^\s*require_once/i\\$CFG->debug = (E_ALL | E_STRICT);   // === DEBUG_DEVELOPER - NOT FOR PRODUCTION SERVERS!' -i /var/www/html/moodle/config.php
-sed '/^\s*require_once/i\\$CFG->debugdisplay = 1;' -i /var/www/html/moodle/config.php
+#sed '/^\s*require_once/i\\// ENABLE DEVELOPER MODE' -i /var/www/html/moodle/config.php
+#sed '/^\s*require_once/i\\$CFG->tool_generator_users_password = 'examplepassword';' -i /var/www/html/moodle/config.php
+#sed '/^\s*require_once/i\\$CFG->debug = (E_ALL | E_STRICT);   // === DEBUG_DEVELOPER - NOT FOR PRODUCTION SERVERS!' -i /var/www/html/moodle/config.php
+#sed '/^\s*require_once/i\\$CFG->debugdisplay = 1;' -i /var/www/html/moodle/config.php
 
 
 # add redis configuration
-sed '/^\s*require_once/i\\$CFG->session_redis_host = '"'${REDIS_SERVER}';" -i /var/www/html/moodle/config.php
-sed '/^\s*require_once/i\\$CFG->session_handler_class = '"'"'\\core\\session\\redis'"'"'\;' -i /var/www/html/moodle/config.php
-sed '/^\s*require_once/i\\$CFG->session_redis_acquire_lock_timeout = 120;' -i /var/www/html/moodle/config.php
-sed '/^\s*require_once/i\\$CFG->session_redis_lock_expire = 7200;' -i /var/www/html/moodle/config.php
+sed -i '/^\s*require_once/i\\$CFG->session_redis_host = '"'${REDIS_SERVER}';" /var/www/html/moodle/config.php
+sed -i '/^\s*require_once/i\\$CFG->session_handler_class = '"'"'\\core\\session\\redis'"'"'\;' /var/www/html/moodle/config.php
+sed -i '/^\s*require_once/i\\$CFG->session_redis_acquire_lock_timeout = 120;' /var/www/html/moodle/config.php
+sed -i '/^\s*require_once/i\\$CFG->session_redis_lock_expire = 7200;' /var/www/html/moodle/config.php
+
+#Enable Redis in PHP
+echo "session.save_handler = redis" >> /etc/php7/conf.d/20_redis.ini
+echo "session.save_path = \"tcp://${REDIS_SERVER}:6379\"" >> /etc/php7/conf.d/20_redis.ini
 
 # Make apache owner of moodle files
 chown -R apache:apache /var/moodledata

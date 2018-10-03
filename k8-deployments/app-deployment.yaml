@@ -32,7 +32,7 @@ spec:
         # <-- END Proxy container -->
         # <-- START Moodle container -->
         - name: moodle-352
-          image: gcr.io/gcloud-docker-demo/docker-build:v.2.2
+          image: gcr.io/gcloud-docker-demo/docker-build:v.2.4
           imagePullPolicy: IfNotPresent
           volumeMounts:
           - mountPath: /var/moodledata
@@ -55,6 +55,8 @@ spec:
             value: m00dLe
           - name: INIT_DB
             value: "0"
+          - name: REDIS_SERVER
+            value: "10.0.5.3"
           # Get DB secrets from configuration files, generated earlier
           - name: DB_USER
             valueFrom:

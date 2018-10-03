@@ -26,7 +26,7 @@ echo "   \$CFG->debugdisplay = 1;" >> /var/www/html/moodle/config.php
 # add redis configuration
 echo "// REDIS CONFIGURATION" >> /var/www/html/moodle/config.php
 echo "    \$CFG->session_handler_class = '\core\session\redis';" >> /var/www/html/moodle/config.php
-echo "    \$CFG->session_redis_host = '127.0.0.1';" >> /var/www/html/moodle/config.php
+echo "    \$CFG->session_redis_host = '10.0.5.3';" >> /var/www/html/moodle/config.php
 echo "    \$CFG->session_redis_acquire_lock_timeout = 120;" >> /var/www/html/moodle/config.php
 echo "    \$CFG->session_redis_lock_expire = 7200;" >> /var/www/html/moodle/config.php
 
@@ -35,7 +35,7 @@ chown -R apache:apache /var/moodledata
 chown -R apache:apache /var/www/html
 
 # set up crone
-echo "* * * * *    /usr/bin/php /var/www/html/moodle/admin/cli/cron.php >/dev/null" >> /var/spool/cron/root
+#echo "* * * * *    /usr/bin/php /var/www/html/moodle/admin/cli/cron.php >/dev/null" >> /var/spool/cron/root
 
 # Generate test data
 #/usr/bin/php /var/www/html/moodle/admin/tool/generator/maketestcourse.php \

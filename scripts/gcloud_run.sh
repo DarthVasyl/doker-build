@@ -17,6 +17,8 @@ FILESHARE_MOUNT=10.72.88.234:/moodledata
 DB_ENDPOINT=gcloud-docker-demo:us-central1:moodle-db
 REGION=us-central1
 ZONE=uc-central1-c
+CLUSTER_NAME=mdc-1
+
 # <--- START SQL --- >
 # create mysql instance with replication
 sudo gcloud sql instances create $DB_INSTANCE_NAME --authorized-networks=46.118.180.0/24 --assign-ip --database-version=MYSQL_5_7 \
@@ -63,9 +65,10 @@ sudo gcloud compute --project=$PROJECT_ID firewall-rules create default-allow-ht
 # <--- END TEST VM --- >
 
 # <--- START kubernetes cluster --- >
-sudo gcloud container clusters create mdc-1 --addons=HttpLoadBalancing --disk-size=60 --enable-autorepair \
---enable-autoupgrade --enable-autoscaling --max-nodes=10 --min-nodes=2 --region=$REGION \
---service-account=$SERVICE_ACCOUNT
+sudo gcloud container clusters create "mdc-1" --project $PROJECT_ID --addons=HttpLoadBalancing --disk-size="60" \
+--enable-autorepair --enable-autoupgrade --enable-autoscaling --enable-cloud-monitoring --max-nodes="10" --min-nodes="2" \
+--region=$REGION --enable-ip-alias --network "projects/$PROJECT_ID/global/networks/default" \
+--subnetwork "projects/$PROJECT_ID/regions/$REGION/subnetworks/default"
 
 ### get kubernetes credentials
 sudo gcloud beta container clusters get-credentials mdc-1 --region $REGION --project $PROJECT_ID
@@ -76,7 +79,7 @@ sudo kubectl create secret generic cloudsql-instance-credentials \
 
 sudo kubectl create secret generic cloudsql-db-credentials \
     --from-literal=username=$DB_USER --from-literal=password=$DB_USER_PASS
-
+######################## TEMP
 sudo kubectl create secret generic cloudsql-db-credentials \
     --from-literal=username=moodleuser --from-literal=password=m00dLe
 # <--- END SQL proxy credentials --- >

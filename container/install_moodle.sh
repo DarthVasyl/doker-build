@@ -26,16 +26,16 @@ sed -i '/^\s*require_once/i\\$CFG->session_redis_database = 0;' /var/www/html/mo
 sed -i '/^\s*require_once/i\\$CFG->session_redis_port = 6379;' /var/www/html/moodle/config.php
 
 # Change Apache configs
-#sed -i 's#AllowOverride [nN]one#AllowOverride All#' /etc/httpd/conf/httpd.conf
-#sed -i 's#DirectoryIndex index.html#DirectoryIndex index.php#' /etc/httpd/conf/httpd.conf
+sed -i 's#AllowOverride [nN]one#AllowOverride All#' /etc/httpd/conf/httpd.conf
+sed -i 's#DirectoryIndex index.html#DirectoryIndex index.php#' /etc/httpd/conf/httpd.conf
 
 # Enable Redis in PHP
 echo "session.save_handler = redis" >> /etc/php.d/redis.ini
 echo "session.save_path = \"tcp://${REDIS_SERVER}:6379\"" >> /etc/php.d/redis.ini
 
 # reinstall apache for solving apache error no mathing directory
-yum remove -y httpd
-yum install -y httpd
+#yum remove -y httpd
+#yum install -y httpd
 
 # Make apache owner of moodle files
 chown -R apache:apache /var/moodledata

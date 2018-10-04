@@ -26,13 +26,13 @@ spec:
             runAsUser: 2  # non-root user
             allowPrivilegeEscalation: false
           volumeMounts:
-            - name: cloudsql-instance-credentials
-              mountPath: /secrets/cloudsql
-              readOnly: true
+          - name: cloudsql-instance-credentials
+            mountPath: /secrets/cloudsql
+            readOnly: true
         # <-- END Proxy container -->
         # <-- START Moodle container -->
         - name: moodle-352
-          image: gcr.io/gcloud-docker-demo/docker-build:v.2.8.2
+          image: gcr.io/gcloud-docker-demo/docker-build:v.3.5:latest
           imagePullPolicy: IfNotPresent
           volumeMounts:
           - mountPath: /var/moodledata

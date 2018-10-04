@@ -4,14 +4,14 @@
 #    commands to create infrastruture from cli    #
 ###################################################
 
-# <-- LATEST PROJECT VARIABLES -->
+# <-- SET PROJECT VARIABLES -->
 PROJECT_ID=gcloud-docker-demo
 SERVICE_ACCOUNT=gcloud-admin@gcloud-docker-demo.iam.gserviceaccount.com
-VM_INSTANCE_NAME=moodle-just-install
 DB_INSTANCE_NAME=moodle-db
 DB_NAME=moodle
 DB_USER=moodleuser
 DB_USER_PASS=m00dLe
+ADMIN_PASS=m@Dm1n
 FILESHARE_NAME=moodledata
 FILESHARE_MOUNT=10.72.88.234:/moodledata
 DB_ENDPOINT=gcloud-docker-demo:us-central1:moodle-db
@@ -21,7 +21,7 @@ CLUSTER_NAME=mdc-1
 
 # <--- START SQL --- >
 # create mysql instance with replication
-sudo gcloud sql instances create $DB_INSTANCE_NAME --authorized-networks=46.118.180.0/24 --assign-ip --database-version=MYSQL_5_7 \
+sudo gcloud sql instances create $DB_INSTANCE_NAME --assign-ip --database-version=MYSQL_5_7 \
 --enable-bin-log --region=$REGION --storage-type=SSD --tier=db-n1-standard-2 \
 --failover-replica-name=$DB_INSTANCE_NAME-repl --replica-type=FAILOVER --replication=asynchronous
 
@@ -47,44 +47,30 @@ DB_ENDPOINT=sudo gcloud beta sql instances describe $DB_INTANCE_NAME --project=$
      --project=$PROJECT_ID --location=$ZONE \
      --file-share=name=$FILESHARE_NAME,capacity=1TB \
      --network=name="default"
-### get info
-# sudo gcloud beta filestore instances describe $FILESHARE_NAME --project=devops-docker-demo --location=us-central1-c | grep endpoint
 # <--- END FILESHARE --- >
 
-# <--- START TEST VM --- >
-### create VM just for Moodle installation
-sudo gcloud beta compute --project=$PROJECT_ID instances create $VM_INSTANCE_NAME --zone=$ZONE \
---machine-type=n1-standard-1 --subnet=default --service-account=$SERVICE_ACCOUNT \
---tags=http-server --image=cos-dev-71-11104-0-0 --image-project=cos-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard \
---boot-disk-device-name=$VM_INSTANCE_NAME \
---metadata DB_HOST=$DB_ENDPOINT --metadata-from-file startup-script=moodle-just-install.sh
-
-### Allow Http to machine
-sudo gcloud compute --project=$PROJECT_ID firewall-rules create default-allow-http --direction=INGRESS \
---priority=1000 --network=default --action=ALLOW --rules=tcp:80 --source-ranges=0.0.0.0/0 --target-tags=http-server
-# <--- END TEST VM --- >
-
 # <--- START kubernetes cluster --- >
-sudo gcloud container clusters create "mdc-1" --project $PROJECT_ID --addons=HttpLoadBalancing --disk-size="60" \
+sudo gcloud container clusters create "$CLUSTER_NAME" --project $PROJECT_ID --addons=HttpLoadBalancing --disk-size="60" \
 --enable-autorepair --enable-autoupgrade --enable-autoscaling --enable-cloud-monitoring --max-nodes="10" --min-nodes="2" \
 --region=$REGION --enable-ip-alias --network "projects/$PROJECT_ID/global/networks/default" \
 --subnetwork "projects/$PROJECT_ID/regions/$REGION/subnetworks/default"
 
 ### get kubernetes credentials
-sudo gcloud beta container clusters get-credentials mdc-1 --region $REGION --project $PROJECT_ID
+sudo gcloud beta container clusters get-credentials $CLUSTER_NAME --region $REGION --project $PROJECT_ID
 
 # <--- START SQL proxy credentials --- >
+# before this step you must create service account 
+# create json key, bind account to your cluster, allow this acount edit sql instance
+# and enable sql admin api
 sudo kubectl create secret generic cloudsql-instance-credentials \
     --from-file=credentials.json=.keys/gcloud-docker-demo-1ae353ab8f29.json
 
 sudo kubectl create secret generic cloudsql-db-credentials \
     --from-literal=username=$DB_USER --from-literal=password=$DB_USER_PASS
-######################## TEMP
-sudo kubectl create secret generic cloudsql-db-credentials \
-    --from-literal=username=moodleuser --from-literal=password=m00dLe
 # <--- END SQL proxy credentials --- >
 
 # <--- END kubernetes cluster --- >
 
-# build Kubernetes deployment
+# deployment for cluster describet in file app-deployment.yaml
+# we can build Kubernetes deployment with command
 sudo kubectl apply -f k8-deployments/app-deployment.yaml --validate=false

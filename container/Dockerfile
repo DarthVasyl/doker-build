@@ -1,8 +1,8 @@
 FROM centos:7
-LABEL version="3.5-beta" maintainer="Vasyl Doroshenko" 
+LABEL version="latest" maintainer="Vasyl Doroshenko" 
 
 # Set default environment varibles
-ENV MOODLE_URL=http://35.239.101.65/moodle
+ENV MOODLE_URL=http://vd.kim.if.ua/moodle
 ENV MOODLE_DATA=/var/moodledata
 ENV DB_TYPE=mysqli
 ENV DB_HOST=127.0.0.1

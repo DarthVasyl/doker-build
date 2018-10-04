@@ -1,0 +1,23 @@
+---
+imports:
+- path: moodle.jinja
+
+resources:
+- name: moodle-latest
+  type: moodle.jinja
+  properties:
+    clusterType: cluster-mdc-auto-type
+    moodle-image: gcr.io/gcloud-docker-demo/docker-build:v.2.8.2 
+    cloudproxy-image: gcr.io/cloudsql-docker/gce-proxy:1.12   
+    db_endpoint: gcloud-docker-demo:us-central1:moodle-db
+    redis_server: "10.0.5.3"
+    filestore_endpoint: 10.72.88.234:/moodledata
+    moodle_url: http://vd.kim.if.ua/moodle
+    port: "80"
+    moodle_data: /var/moodledata
+    db_host: "127.0.0.1"
+    db_port: "3306"
+    db_name: moodle
+    admin_pass: m00dLe
+    init_db: "0"
+    

@@ -1,0 +1,12 @@
+---
+imports:
+- path: templates/cluster.jinja
+  name: cluster.jinja
+
+resources:
+- name: mdc-auto
+  type: cluster.jinja
+  properties:
+    zone: us-central1-c
+    initialNodeCount: "3"
+    description: "Cluster created with Google Deployment Manager"

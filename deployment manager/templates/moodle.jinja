@@ -1,0 +1,155 @@
+{# Set variables for API calls #}
+{% set CLUSTER_TYPE = env['project'] + '/' + properties['clusterType'] %}
+{% set SERVICE_COLLECTION = '/api/v1/namespaces/{namespace}/' + 'services' %}
+{% set DEPLOYMENT_COLLECTION = '/apis/apps/v1beta1/namespaces/{namespace}/' + 'deployments' %}
+{% set NAME_PREFIX = env['deployment'] + '-' + env['name'] %}
+
+{# Container images #}
+{% set MOODLE_IMAGE = properties['moodle-image'] %}
+{% set PROXY_IMAGE = properties['cloudproxy_image'] %}
+
+{# Set all vars for Moodle installation #}
+{% set MOODLE_URL = properties['moodle_url'] %}
+{% set PORT = properties['port'] %}
+{% set FILESTORE = properties['filestore_endpoint'] %}
+{% set DB_ENDPOINT = properties['db_endpoint'] %}
+{% set REDIS_SERVER = properties['redis_server'] %}
+{% set MOODLE_DATA = properties['moodle_data'] %}
+{% set DB_HOST = properties['db_host'] %}
+{% set DB_NAME = properties['db_name'] %}
+{% set DB_PORT = properties['db_port'] %}
+{% set ADMIN_PASS = properties['admin_pass'] %}
+{% set INIT_DB = properties['init_db'] %}
+
+resources:
+{# Load balancer configuration #}
+- name: {{ NAME_PREFIX }}-service
+  type: {{ CLUSTER_TYPE }}:{{ SERVICE_COLLECTION }}
+  properties:
+    apiVersion: v1
+    kind: Service
+    namespace: default
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          gcloud beta filestore instances create test-share --location=uc-central1-c \
+          --project=gcloud-docker-demo --file-share=name=test-share, capacity=1TB --network=name="default"
+          
+          gcloud redis instances create myinstance --size=1 --region=us-central1
+          
+          gcloud beta container clusters get-credentials cluster-mdc-auto	 --region us-central1 --project gcloud-docker-demo
+          kubectl create secret generic cloudsql-instance-credentials \
+          --from-file=credentials.json=.keys/gcloud-docker-demo-1ae353ab8f29.json
+          sudo kubectl create secret generic cloudsql-db-credentials \
+          --from-literal=username=moodleuser --from-literal=password=m00dLe
+          #kubectl create -f /home/a_tomkiv84/volume.yml
+          #kubectl create -f /home/a_tomkiv84/volume2.yml
+      labels:
+        app: {{ NAME_PREFIX }}
+      name: {{ NAME_PREFIX }}-service
+    spec:
+      externalTrafficPolicy: Cluster
+      ports:
+      - port: {{ PORT }}
+        protocol: TCP
+        targetPort: {{ PORT }}
+      selector:
+        app: {{ NAME_PREFIX }}
+      type: LoadBalancer
+
+{# k8 deployment configuration #}
+- name: {{ NAME_PREFIX }}-deployment
+  type: {{ CLUSTER_TYPE }}-apps:{{ DEPLOYMENT_COLLECTION }}
+  properties:
+    apiVersion: apps/v1beta1
+    kind: Deployment
+    namespace: default
+    metadata:
+      name: {{ NAME_PREFIX }}-deployment
+    spec:
+      replicas: 5
+      strategy:
+        rollingUpdate:
+          maxSurge: 1
+          maxUnavailable: 1
+        type: RollingUpdate
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            app: {{ NAME_PREFIX }}
+        spec:
+          containers:
+          {# Container with cloud sql proxy for DB connection #}
+          - command:
+            - /cloud_sql_proxy
+            - -instances={{ DB_ENDPOINT }}=tcp:{{ DB_PORT }}
+            - -credential_file=/secrets/cloudsql/credentials.json
+            image: {{ PROXY_IMAGE }}
+            imagePullPolicy: IfNotPresent
+            name: cloudsql-proxy
+            resources: {}
+            securityContext:
+              allowPrivilegeEscalation: false
+              runAsUser: 2
+            terminationMessagePath: /dev/termination-log
+            terminationMessagePolicy: File
+            volumeMounts:
+            - mountPath: /secrets/cloudsql
+              name: cloudsql-instance-credentials
+              readOnly: true
+            {# Moodle latest container #}  
+            - name: {{ NAME_PREFIX }}
+              image: {{ MOODLE_IMAGE }}
+              imagePullPolicy: IfNotPresent
+              resources: {}
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+              volumeMounts:
+              - mountPath: {{ MOODLE_DATA }}
+                name: mypvc
+              {# Pass required variables to container #}
+              env:
+              - name: MOODLE_URL
+                value: {{ MOODLE_URL }}
+              - name: MOODLE_DATA
+                value: {{ MOODLE_DATA }}
+              - name: DB_HOST
+                value: {{ DB_HOST }}
+              - name: DB_PORT
+                value: {{ DB_PORT }}
+              - name: DB_NAME
+                value: {{ DB_NAME }}
+              - name: ADMIN_PASS
+                value: {{ ADMIN_PASS }}
+              - name: INIT_DB
+                value: {{ INIT_DB }}
+              - name: REDIS_SERVER
+                value: {{ REDIS_SERVER }}
+              {# Get DB secrets from configuration files, generated earlier #}
+              - name: DB_USER
+                valueFrom:
+                  secretKeyRef:
+                    name: cloudsql-db-credentials
+                    key: username
+              - name: DB_PASS
+                valueFrom:
+                  secretKeyRef:
+                    name: cloudsql-db-credentials
+                    key: password
+          restartPolicy: Always
+          schedulerName: default-scheduler
+          securityContext: {}
+          terminationGracePeriodSeconds: 30
+          {# mount volumes to cluster #}
+          volumes:
+          - name: cloudsql-instance-credentials
+            secret:
+              defaultMode: 420
+              secretName: cloudsql-instance-credentials
+          - name: mypvc
+            persistentVolumeClaim:
+              claimName: fileserver-claim
+              readOnly: false

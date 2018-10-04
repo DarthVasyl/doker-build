@@ -17,7 +17,7 @@
     --agree-license \
     $(if [ $INIT_DB -eq 0 ]; then echo "--skip-database"; fi)
 
-# add Redis configuration
+# add Redis configuration to Moodle config.php
 sed -i '/^\s*require_once/i\\$CFG->session_redis_host = '"'${REDIS_SERVER}';" /var/www/html/moodle/config.php
 sed -i '/^\s*require_once/i\\$CFG->session_handler_class = '"'"'\\core\\session\\redis'"'"'\;' /var/www/html/moodle/config.php
 sed -i '/^\s*require_once/i\\$CFG->session_redis_acquire_lock_timeout = 120;' /var/www/html/moodle/config.php
@@ -32,10 +32,6 @@ sed -i 's#DirectoryIndex index.html#DirectoryIndex index.php#' /etc/httpd/conf/h
 # Enable Redis in PHP
 echo "session.save_handler = redis" >> /etc/php.d/redis.ini
 echo "session.save_path = \"tcp://${REDIS_SERVER}:6379\"" >> /etc/php.d/redis.ini
-
-# reinstall apache for solving apache error no mathing directory
-#yum remove -y httpd
-#yum install -y httpd
 
 # Make apache owner of moodle files
 chown -R apache:apache /var/moodledata

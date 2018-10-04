@@ -1,8 +1,9 @@
-{% set NAME_PREFIX = env['deployment'] + '-' + env['name'] %}
-{% set CLUSTER_NAME = NAME_PREFIX %}
-{% set TYPE_NAME = NAME_PREFIX + '-type' %}
+{# Set environment variables for this template #}
+{% set CLUSTER_NAME = env['deployment'] + '-' + env['name'] %}
+{% set TYPE_NAME = CLUSTER_NAME + '-type' %}
 {% set K8S_ENDPOINTS = {'': 'api/v1', '-apps': 'apis/apps/v1beta1', '-v1beta1-extensions': 'apis/extensions/v1beta1'} %}
 
+{# Create kubernetes cluster configuration #}
 resources:
 - name: {{ CLUSTER_NAME }}
   type: container.v1.cluster
@@ -17,10 +18,9 @@ resources:
         - https://www.googleapis.com/auth/devstorage.read_only
         - https://www.googleapis.com/auth/logging.write
         - https://www.googleapis.com/auth/monitoring
-        - https://www.googleapis.com/auth/servicecontrol
-        - https://www.googleapis.com/auth/service.management.readonly
-        - https://www.googleapis.com/auth/trace.append
 
+{# Define TypeProviders for different K8s endpoints.
+This allows K8s resources to be created using Deployment manager. #}
 {% for typeSuffix, endpoint in K8S_ENDPOINTS.iteritems() %}
 - name: {{ TYPE_NAME }}{{ typeSuffix }}
   type: deploymentmanager.v2beta.typeProvider
@@ -28,20 +28,20 @@ resources:
     options:
       validationOptions:
         schemaValidation: IGNORE_WITH_WARNINGS
-        inputMappings:
-        - fieldName: name
-          location: PATH
-          methodMatch: ^(GET|DELETE|PUT)$
-          value: $.ifNull($.resource.properties.metadata.name, $.resource.name)
-        - fieldName: metadata.name
-          location: BODY
-          methodMatch: ^(PUT|POST)$
-          value: $.ifNull($.resource.properties.metadata.name, $.resource.name)
-        - fieldName: Authorization
-          location: HEADER
-          value: >
-            $.concat("Bearer ", $.googleOauth2AccessToken())
-      descriptorUrl: https://$(ref.{{ CLUSTER_NAME }}.endpoint)/swaggerapi/{{ endpoint }}
+      inputMappings:
+      - fieldName: name
+        location: PATH
+        methodMatch: ^(GET|DELETE|PUT)$
+        value: $.ifNull($.resource.properties.metadata.name, $.resource.name)
+      - fieldName: metadata.name
+        location: BODY
+        methodMatch: ^(PUT|POST)$
+        value: $.ifNull($.resource.properties.metadata.name, $.resource.name)
+      - fieldName: Authorization
+        location: HEADER
+        value: >
+          $.concat("Bearer ", $.googleOauth2AccessToken())
+    descriptorUrl: https://$(ref.{{ CLUSTER_NAME }}.endpoint)/swaggerapi/{{ endpoint }}
 {% endfor %}
 
 outputs:
